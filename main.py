@@ -1,23 +1,28 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 import jwt
 import datetime
 import uuid
-import os
-from dotenv import load_dotenv 
+import secrets
 
-# Load environment variables (for production, store secrets in .env)
-load_dotenv()
-
-# Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-256-bit-secret")  # Use a strong secret key in production
+# Generate a secure random key (using secrets module from standard library)
+# For demo purposes, we'll hardcode a generated key
+# In production, use environment variables or a secure key management system
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 app = FastAPI(title="JWT Generator API", description="A simple API to generate dummy JWT tokens")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React and Vite default ports
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class TokenRequest(BaseModel):
@@ -101,4 +106,4 @@ async def verify_token(token: str = Depends(oauth2_scheme)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
